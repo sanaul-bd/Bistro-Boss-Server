@@ -1,0 +1,4 @@
+# write heare all file or dir whuch u wan't share on git or outside. 
+
+node_modules
+.env
