@@ -29,6 +29,22 @@ pass: 8ZfNmq4BKUuaUsNs.
 
 
 
+# ----------------------------------------------------------------------
+        ----  BASIC SECURITY  ----
+    a. do not show the link to them who shouldn't see them. 
+    b. only show that person /type of user who should see it. 
+    c. if someone type url don't show the page. 
+
+        ----  ADVANCE SECURITY || TO SEND DATA  ----
+        a. verify JWT Token (এইটা না করলে বুঝা যাবে না কে ইউজ করতেছে, এডমিন নাকি অন্য কেউ নাকি বট। ইচ্ছেমত ডাটা লোড দিয়ে ঝামেলা করে ফেলতে পারবে )
+        b. Admin verify : if it is an admin activits make sure only admin user can post this data. 
+        c. 
+        d. 
+
+# ----------------------------------------------------------------------
+
+
+
 /*
 *---------------------------------
 *     NAMING CONVENTION
