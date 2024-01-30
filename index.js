@@ -68,10 +68,10 @@ async function run() {
 
         const verefyAdmin = async (req, res, next) => {
             const email = req.decoded.email;
-            const query = {email : email}
+            const query = { email: email }
             const user = await usersCollection.findOne(query);
-            if(user.role !== "admin"){
-                res.status(403).send({error: true, message: "forbidden Access"})
+            if (user.role !== "admin") {
+                res.status(403).send({ error: true, message: "forbidden Access" })
             }
             next();
         }
@@ -87,7 +87,7 @@ async function run() {
 
         // get all users
         // todo verifyJWT was added 
-        app.get('/users', verifyJWT, verefyAdmin,  async (req, res) => {
+        app.get('/users', verifyJWT, verefyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result);
         })
@@ -139,15 +139,23 @@ async function run() {
 
         //* MENU  - Api --------------------------------------------------
         // get
-        app.get('/menu',  async (req, res) => {
+        app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray();
             res.send(result);
         })
 
         // post new recipe from admin by verify jwt, isAdmin
-        app.post('/menu', verifyJWT, verefyAdmin, async(req, res ) => {
+        app.post('/menu', verifyJWT, verefyAdmin, async (req, res) => {
             const newItem = req.body;
             const result = await menuCollection.insertOne(newItem);
+            res.send(result)
+        })
+
+        // ! Delete 
+        app.delete('/menu/:id', verifyJWT, verefyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await menuCollection.deleteOne(query);
             res.send(result)
         })
 
