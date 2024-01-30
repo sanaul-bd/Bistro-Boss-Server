@@ -1,7 +1,11 @@
 
-
+# ##########################################################
+যা যা দেখতে হবে: Jwt, Axios, axisInterceptor, pagenaation , 
+1. image server: https://web.programming-hero.com/update-1/video/update-1-79-5-upload-image-to-image-hosting-server-imgbb-and-get-image-url
+# ##########################################################
 
 # install server : 
+* Server Code link : https://github.com/sanaul-bd/Bistro-Boss-Server
 * npm init -y
 * npm i express mongodb cors dotenv
 
