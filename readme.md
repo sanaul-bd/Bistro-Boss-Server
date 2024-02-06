@@ -19,6 +19,10 @@ cluster Name: Bistro-Boss-Restaurante-Server
 user name: devconfigbd.
 pass: 8ZfNmq4BKUuaUsNs.
 
+stripe: 
+devconfig.bd@gmail.com
+pass: Dj6a3z2J5ay8  || Dj6a3z2J5ay8
+
 
 <!-- ! ################################################################ -->
 

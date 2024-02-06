@@ -2,10 +2,15 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
-const port = process.env.PORT || 5000;
-
 // jwt
 const jwt = require('jsonwebtoken');
+
+// test secret Api key 
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
+
+const port = process.env.PORT || 5000;
+
+
 
 // middleWare 
 app.use(cors());
@@ -154,7 +159,7 @@ async function run() {
         // ! Delete 
         app.delete('/menu/:id', verifyJWT, verefyAdmin, async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await menuCollection.deleteOne(query);
             res.send(result)
         })
@@ -198,6 +203,26 @@ async function run() {
             res.send(result);
         })
 
+        //* Payment apis - server -1
+        // আমরা একটি এপিআই বানালাম যেটা দিয়ে আমরা ইউজার কে চ্যালেঞ্জ করে তার বৈধতা দেখে নিবো। তারপর আমরা বডি থেকে প্রাইস / ইনফো নিবো, এমাউন্ট কে পারসফ্লোট করে দিবো যাতে পয়সা হিসেব করা যায়। পেমেন্ট ইন্টেন্ট কল করবো , তাতে অব্জেক্ট দিবো, পেমেন্ট মেথড দিবো আর রেসপন্স দিবো পেমেন্ট ইন্টেন্ট থেকে আসা ক্লাইন্ট সিক্রেট কোড কে। 
+        app.post('/create-payment-intent', async (req, res) => {
+            // const {item} = req.body;
+            const { price } = req.body;
+            const amount = parseInt(price * 100);
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            })
+            console.log("Client Secret >>> ",paymentIntent.client_secret);
+            // console.log("Whole Payment Secret Here::: ",paymentIntent);
+
+            res.send({
+                clientSecret: paymentIntent
+                // clientSecret: paymentIntent.client_secret
+            })
+        });
 
 
 
