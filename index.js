@@ -205,6 +205,17 @@ async function run() {
         })
 
         // payment api
+        // get payment info
+        app.get('/payments/:email', verifyJWT, async (req, res) => {
+            const query = { email: req.params.email };
+            if(req.params.email !== req.decoded.email){
+                return res.status(403).send({message: "forbidden access for get payment list."})
+            }
+            const result = await PaymentCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // post payment info
         app.post('/payments', async (req, res) => {
             const payment = req.body;
             const paymentReslt = await PaymentCollection.insertOne(payment);
@@ -221,7 +232,7 @@ async function run() {
                 }
             }
             const deletedResult = await cartCollection.deleteMany(query);
-            res.send({paymentReslt, deletedResult})
+            res.send({ paymentReslt, deletedResult })
         })
         //* Payment apis - server -1
         // আমরা একটি এপিআই বানালাম যেটা দিয়ে আমরা ইউজার কে চ্যালেঞ্জ করে তার বৈধতা দেখে নিবো। তারপর আমরা বডি থেকে প্রাইস / ইনফো নিবো, এমাউন্ট কে পারসফ্লোট করে দিবো যাতে পয়সা হিসেব করা যায়। পেমেন্ট ইন্টেন্ট কল করবো , তাতে অব্জেক্ট দিবো, পেমেন্ট মেথড দিবো আর রেসপন্স দিবো পেমেন্ট ইন্টেন্ট থেকে আসা ক্লাইন্ট সিক্রেট কোড কে। 
