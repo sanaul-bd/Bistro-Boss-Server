@@ -63,6 +63,7 @@ async function run() {
         const menuCollection = client.db('Bistro_Boss_Restruant').collection('menu');
         const reviewsCollection = client.db('Bistro_Boss_Restruant').collection('reviews');
         const cartCollection = client.db('Bistro_Boss_Restruant').collection('carts');
+        const PaymentCollection = client.db('Bistro_Boss_Restruant').collection('payments');
 
         // ! JWT
         app.post('/jwt', async (req, res) => {
@@ -203,6 +204,25 @@ async function run() {
             res.send(result);
         })
 
+        // payment api
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const paymentReslt = await PaymentCollection.insertOne(payment);
+
+            // ^ carefully delete etch item from the cart
+            // const query = {_id: new ObjectId(id)} // for one id query method 
+            // console.log("paymentId Info", payment);
+            const query = {
+                // ~ এখানে পেমেন্ট অব্জেক্ট থেকে _cartIds.map() করে cardIds এক্সেস করার আইডি গুলো নিলাম। তারপর সেগুলো object করে রাখার জন্য একটা object{} বানালাম যেখানে নতুন একটা mdbr _id হলো। এবং এই টা দিয়ে এই অব্জেক্ট এ যে আইডি আছে সে সমস্ত cart আইডি যুক্ত আইটেম গুলো ডিলেট করে দিলাম। 
+                // পেমেন্ট এর জন্য আলাদা কালেকশন হলো, তাতে অব্জেক্ট হিসেবে পেমেন্ট এর ইনফো ডাটাবেজে সেন্ড করে দিলাম। 
+                // আবার এখানে কোয়ারি করে কার্ট থেকে সমস্ত আইটেম মুছে দিলাম কারণ পেমেন্ট হয়ে গেছে । 
+                _id: {
+                    $in: payment._cartIds.map(id => new ObjectId(id))
+                }
+            }
+            const deletedResult = await cartCollection.deleteMany(query);
+            res.send({paymentReslt, deletedResult})
+        })
         //* Payment apis - server -1
         // আমরা একটি এপিআই বানালাম যেটা দিয়ে আমরা ইউজার কে চ্যালেঞ্জ করে তার বৈধতা দেখে নিবো। তারপর আমরা বডি থেকে প্রাইস / ইনফো নিবো, এমাউন্ট কে পারসফ্লোট করে দিবো যাতে পয়সা হিসেব করা যায়। পেমেন্ট ইন্টেন্ট কল করবো , তাতে অব্জেক্ট দিবো, পেমেন্ট মেথড দিবো আর রেসপন্স দিবো পেমেন্ট ইন্টেন্ট থেকে আসা ক্লাইন্ট সিক্রেট কোড কে। 
         app.post('/create-payment-intent', async (req, res) => {
@@ -215,7 +235,7 @@ async function run() {
                 currency: 'usd',
                 payment_method_types: ['card']
             })
-            console.log("Client Secret >>> ",paymentIntent.client_secret);
+            console.log("Client Secret >>> ", paymentIntent.client_secret);
             // console.log("Whole Payment Secret Here::: ",paymentIntent);
 
             res.send({
