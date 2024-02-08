@@ -22,14 +22,14 @@ const verifyJWT = (req, res, next) => {
     const authorization = req.headers.authorization;
     // ! if unAuthorize user want access data
     if (!authorization) {
-        return res.status(401).send({ error: true, message: "unAuthorized Access---" })
+        return res.status(401).send({ error: true, message: "unAuthorized Access--- Authorization null" })
     }
     // token = bearer token;    we'll split gap and get token only 
     const token = authorization.split(' ')[1];
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).send({ error: true, message: "unAuthorized Access (f)" })
+            return res.status(401).send({ error: true, message: "unAuthorized Access token null" })
         }
         req.decoded = decoded;
         next();
@@ -77,7 +77,7 @@ async function run() {
             const query = { email: email }
             const user = await usersCollection.findOne(query);
             if (user.role !== "admin") {
-                res.status(403).send({ error: true, message: "forbidden Access" })
+                res.status(403).send({ error: true, message: "forbidden Access (try acces admin data)" })
             }
             next();
         }
@@ -208,8 +208,8 @@ async function run() {
         // get payment info
         app.get('/payments/:email', verifyJWT, async (req, res) => {
             const query = { email: req.params.email };
-            if(req.params.email !== req.decoded.email){
-                return res.status(403).send({message: "forbidden access for get payment list."})
+            if (req.params.email !== req.decoded.email) {
+                return res.status(403).send({ message: "forbidden access for get payment list." })
             }
             const result = await PaymentCollection.find(query).toArray();
             res.send(result);
@@ -234,6 +234,43 @@ async function run() {
             const deletedResult = await cartCollection.deleteMany(query);
             res.send({ paymentReslt, deletedResult })
         })
+
+        // stats or analytics
+        app.get('/admin-stats'
+            , async (req, res) => {
+                const users = await usersCollection.estimatedDocumentCount();
+                const menuItems = await menuCollection.estimatedDocumentCount();
+                const orders = await PaymentCollection.estimatedDocumentCount();
+
+                // this is not the best way || 
+                // const payments = await PaymentCollection.find().toArray();
+                // const revenue = payments.reduce((total, payment) => total + payment.price, 0)
+
+                // how to make spc grupe for finding more info in one operation 
+                // & এইটা হলো একটা নির্দিষ্ট ডেটা নিয়ে সেটাকে ম্যানেজ করে দেয়, মানে আমরা কাজ করার জন্য একদম পুরো ডাটা কে নিয়ে আসা লাগেনা। যা লাগে এই অপারেশনের মাধ্যমে শুধু সেই নির্দিষ্ট ডাটা গুলৈ দিচ্ছে। _id: null মানে এই কালেকশনের সমস্থ ডেটা কে বুঝাচ্ছে। 
+                // টোতাল রেভিনিউর মধ্যে সাম করলাম ঃ প্রাইস ইন্ডেক্স টা কে, মানে ওই অবজেক্টের প্রাইস গুলো কে শুধু আলাদা করে নিলাম ও যোগ করে রাখলাম । 
+                const result = await PaymentCollection.aggregate([
+                    {
+                        $group: {
+                            _id: null,
+                            totalRevenue: {
+                                $sum: '$price'
+                            }
+                        }
+                    }
+                ]).toArray();
+                // যদি রেজাল্ট একাধিকের বেশি অব্জেক্ট থাকে  তখন আমরা result[0] তে আনা সমস্ত ডেটা থাকবে তা আমরা totalRevenue তে স্টোর করে দিবো অথবা শুন্য দেখাবো । ইজি কনসেপ্ট 
+                const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+                res.send({
+                    users,
+                    menuItems,
+                    orders,
+                    revenue
+                })
+            })
+
+
         //* Payment apis - server -1
         // আমরা একটি এপিআই বানালাম যেটা দিয়ে আমরা ইউজার কে চ্যালেঞ্জ করে তার বৈধতা দেখে নিবো। তারপর আমরা বডি থেকে প্রাইস / ইনফো নিবো, এমাউন্ট কে পারসফ্লোট করে দিবো যাতে পয়সা হিসেব করা যায়। পেমেন্ট ইন্টেন্ট কল করবো , তাতে অব্জেক্ট দিবো, পেমেন্ট মেথড দিবো আর রেসপন্স দিবো পেমেন্ট ইন্টেন্ট থেকে আসা ক্লাইন্ট সিক্রেট কোড কে। 
         app.post('/create-payment-intent', async (req, res) => {
