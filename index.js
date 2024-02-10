@@ -63,7 +63,7 @@ async function run() {
         const menuCollection = client.db('Bistro_Boss_Restruant').collection('menu');
         const reviewsCollection = client.db('Bistro_Boss_Restruant').collection('reviews');
         const cartCollection = client.db('Bistro_Boss_Restruant').collection('carts');
-        const PaymentCollection = client.db('Bistro_Boss_Restruant').collection('payments');
+        const paymentCollection = client.db('Bistro_Boss_Restruant').collection('payments');
 
         // ! JWT
         app.post('/jwt', async (req, res) => {
@@ -211,14 +211,14 @@ async function run() {
             if (req.params.email !== req.decoded.email) {
                 return res.status(403).send({ message: "forbidden access for get payment list." })
             }
-            const result = await PaymentCollection.find(query).toArray();
+            const result = await paymentCollection.find(query).toArray();
             res.send(result);
         })
 
         // post payment info
         app.post('/payments', async (req, res) => {
             const payment = req.body;
-            const paymentReslt = await PaymentCollection.insertOne(payment);
+            const paymentReslt = await paymentCollection.insertOne(payment);
 
             // ^ carefully delete etch item from the cart
             // const query = {_id: new ObjectId(id)} // for one id query method 
@@ -240,16 +240,16 @@ async function run() {
             , async (req, res) => {
                 const users = await usersCollection.estimatedDocumentCount();
                 const menuItems = await menuCollection.estimatedDocumentCount();
-                const orders = await PaymentCollection.estimatedDocumentCount();
+                const orders = await paymentCollection.estimatedDocumentCount();
 
                 // this is not the best way || 
-                // const payments = await PaymentCollection.find().toArray();
+                // const payments = await paymentCollection.find().toArray();
                 // const revenue = payments.reduce((total, payment) => total + payment.price, 0)
 
                 // how to make spc grupe for finding more info in one operation 
                 // & এইটা হলো একটা নির্দিষ্ট ডেটা নিয়ে সেটাকে ম্যানেজ করে দেয়, মানে আমরা কাজ করার জন্য একদম পুরো ডাটা কে নিয়ে আসা লাগেনা। যা লাগে এই অপারেশনের মাধ্যমে শুধু সেই নির্দিষ্ট ডাটা গুলৈ দিচ্ছে। _id: null মানে এই কালেকশনের সমস্থ ডেটা কে বুঝাচ্ছে। 
                 // টোতাল রেভিনিউর মধ্যে সাম করলাম ঃ প্রাইস ইন্ডেক্স টা কে, মানে ওই অবজেক্টের প্রাইস গুলো কে শুধু আলাদা করে নিলাম ও যোগ করে রাখলাম । 
-                const result = await PaymentCollection.aggregate([
+                const result = await paymentCollection.aggregate([
                     {
                         $group: {
                             _id: null,
@@ -291,6 +291,48 @@ async function run() {
                 // clientSecret: paymentIntent.client_secret
             })
         });
+
+
+
+        // * Using Aggregate pipeline
+        // app.get('/order-stats', async (req, res) => {
+        //     const result = await paymentCollection.aggregate([
+        //         {
+        //             $unwind: "$menuItemIds" // এক আইডি দিয়ে menuId গুলোকে আলাদা আলাদা করে দিবে।  
+        //         },
+        //         {
+        //             $lookup: {
+        //                 from: 'menu', // menu'র সাথে মিলাবো , খুজে দেখবো 
+        //                 localField: 'menuItemIds', // এইখানের আইডি গুলাকে মিলাবো 
+        //                 foreignField: '_id', // "menu" collecion এর _id র সাথে মিলাবো 
+        //                 as: 'menuItems', // যে নামে রিটার্ন চাচ্ছি 
+        //                 // paymentCollection er "menuItemIds" gulake unwind korbo. "menu: menuCollection er foreginField: menu._id" sathe tulona kore as: menuitems নামে রিটার্ন নিবো । 
+        //             }
+        //         }
+        //     ]).toArray();
+
+
+        //     res.send(result);
+        // })
+
+        // using aggregate pipeline
+        app.get('/order-stats', async (req, res) => {
+            const result = await paymentCollection.aggregate([
+                { $unwind: "$menuItemIds" },
+
+                // Perform the lookup to join with menu collection
+                {
+                    $lookup: {
+                        from: "menu", // Name of the menu collection
+                        localField: "menuItemIds", // Field in the payment collection
+                        foreignField: "_id", // Field in the menu collection
+                        as: "menuItems" // Name for the output array field
+                    }
+                }
+            ]).toArray();
+
+            res.send(result)
+        })
 
 
 

@@ -28,6 +28,30 @@ pass: Dj6a3z2J5ay8  || Dj6a3z2J5ay8
 
 
 
+-----------------------------------------------
+{
+        "_id": "65c69c158ccbf1af6dbafcb5",
+        "email": "sanaullah.bd21@gmail.com",
+        "price": 51.8,
+        "Transaction_ID": "pi_3Oi1p8Ep3bUWfzDZ1793nqUq",
+        "date": "2024-02-09T21:41:41.476Z",
+        "_cartIds": [
+            "65c69bf68ccbf1af6dbafcb1",
+            "65c69bfd8ccbf1af6dbafcb2",
+            "65c69bff8ccbf1af6dbafcb3",
+            "65c69c058ccbf1af6dbafcb4"
+        ],
+        "menuItemIds": [
+            "65721607743caf715ad909ad",
+            "65721607743caf715ad909c8",
+            "65721607743caf715ad909c1",
+            "65721607743caf715ad9099d"
+        ],
+        "status": "pending"
+    },
+-----------------------------------------------
+
+
 # 75-7 Select right tab based on the category
 1. install server techonologis. 
 2. 
