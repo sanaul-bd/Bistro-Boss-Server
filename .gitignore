@@ -5,4 +5,4 @@ node_modules
 readme.md 
 .gitignore
 menu.json
-*.md
+.md
