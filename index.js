@@ -295,38 +295,38 @@ async function run() {
 
 
         // * Using Aggregate pipeline
-        // app.get('/order-stats', async (req, res) => {
-        //     const result = await paymentCollection.aggregate([
-        //         {
-        //             $unwind: "$menuItemIds" // এক আইডি দিয়ে menuId গুলোকে আলাদা আলাদা করে দিবে।  
-        //         },
-        //         {
-        //             $lookup: {
-        //                 from: 'menu', // menu'র সাথে মিলাবো , খুজে দেখবো 
-        //                 localField: 'menuItemIds', // এইখানের আইডি গুলাকে মিলাবো 
-        //                 foreignField: '_id', // "menu" collecion এর _id র সাথে মিলাবো 
-        //                 as: 'menuItems', // যে নামে রিটার্ন চাচ্ছি 
-        //                 // paymentCollection er "menuItemIds" gulake unwind korbo. "menu: menuCollection er foreginField: menu._id" sathe tulona kore as: menuitems নামে রিটার্ন নিবো । 
-        //             }
-        //         }
-        //     ]).toArray();
-
-
-        //     res.send(result);
-        // })
-
-        // using aggregate pipeline
-        app.get('/order-stats', async (req, res) => {
+        app.get('/order-stats',   async (req, res) => {
             const result = await paymentCollection.aggregate([
                 { $unwind: "$menuItemIds" },
-
-                // Perform the lookup to join with menu collection
+                {
+                    $addFields: {
+                        "menuItemIds": {
+                            $toObjectId: "$menuItemIds" // Convert string ID to ObjectId
+                        }
+                    }
+                },
                 {
                     $lookup: {
                         from: "menu", // Name of the menu collection
                         localField: "menuItemIds", // Field in the payment collection
                         foreignField: "_id", // Field in the menu collection
-                        as: "menuItems" // Name for the output array field
+                        as: "collection_Menu_Itms" // Name for the output array field
+                    }
+                },
+                { $unwind: '$collection_Menu_Itms' },
+                {
+                    $group: {
+                        _id: "$collection_Menu_Itms.category",
+                        quantity: { $sum: 1, },
+                        revinue: { $sum: "$collection_Menu_Itms.price" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        category: "$_id",
+                        quantity: "$quantity",
+                        revinue: "$revinue"
                     }
                 }
             ]).toArray();
