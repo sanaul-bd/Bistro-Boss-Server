@@ -1,4 +1,4 @@
-check pc ram: mdsched.exe
+
 # ##########################################################
 যা যা দেখতে হবে: Jwt, Axios, axisInterceptor, pagenaation , gsap/react(animation for client job), [useMemo, useCallbak, useRef, useReducer]
 1. image server: https://web.programming-hero.com/update-1/video/update-1-79-5-upload-image-to-image-hosting-server-imgbb-and-get-image-url

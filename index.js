@@ -56,7 +56,8 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // client.connect(): coment befor deploy vercel server 
+        // await client.connect();
 
         // Database collection
         const usersCollection = client.db('Bistro_Boss_Restruant').collection('users');
@@ -335,9 +336,9 @@ async function run() {
         })
 
 
-
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        
+        // client.db(): Comment befor deploy vercel Send a ping to confirm a successful connection
+        // await client.db("admin").command({ ping: 1 });
         // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
@@ -355,16 +356,3 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Bistro boss "Pinged your deployment. You successfully connected to MongoDB!" PORT == ${port}`);
 })
-
-/*
-*---------------------------------
-*     NAMING CONVENTION
-*---------------------------------
-* users : usersCollection
-* app.get('/users')
-* app.get('/users/:id')
-* app.post('/users')
-* app.patch('/users/:id')
-* app.put('/users/:id')
-* app.delete('/users/:id')
-*/ 
