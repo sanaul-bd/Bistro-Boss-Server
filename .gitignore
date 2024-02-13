@@ -1,6 +1,5 @@
-.gitignore
-node_modules
-.env 
-readme.md
-menu.json
-.md
+node_modules 
+.env
+.gitignore 
+menu.json 
+.vercel

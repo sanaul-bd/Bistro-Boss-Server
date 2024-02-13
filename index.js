@@ -296,7 +296,7 @@ async function run() {
 
 
         // * Using Aggregate pipeline
-        app.get('/order-stats',   async (req, res) => {
+        app.get('/order-stats', verifyJWT, verefyAdmin,  async (req, res) => {
             const result = await paymentCollection.aggregate([
                 { $unwind: "$menuItemIds" },
                 {
