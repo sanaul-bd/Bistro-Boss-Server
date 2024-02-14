@@ -1,5 +1,22 @@
-node_modules 
+# Ignore node_modules directory
+node_modules/
+
+# Ignore logs
+logs/
+
+# Ignore environment variables file
 .env
-.gitignore 
-menu.json 
-.vercel
+
+# Ignore any files generated during development or testing
+*.log
+*.pid
+*.lock
+*.env.local
+
+# Ignore editor and IDE specific files
+.vscode/
+.idea/
+
+# 
+.README.md
+.aggregetetion.md
