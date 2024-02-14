@@ -1,12 +1,20 @@
-const express = require('express');
+const express = require('express'); 
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
 // jwt
 const jwt = require('jsonwebtoken');
 
+
 // test secret Api key 
 const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
+
+// mailgun 
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
+const mailgun = new Mailgun(formData);
+// mailgun Clinent 
+const mg = mailgun.client({ username: 'api', key: process.env.MAIL_API_KEY,});
 
 const port = process.env.PORT || 5000;
 
@@ -42,7 +50,7 @@ const verifyJWT = (req, res, next) => {
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const e = require('express');
 const uri = `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASS}@bistro-boss-restaurante.5e9c7hp.mongodb.net/?retryWrites=true&w=majority`;
-// console.log(uri);
+// console.log(uri, process.env.MAIL_SENDING_DOMAIN, process.env.MAIL_API_KEY);
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -233,6 +241,26 @@ async function run() {
                 }
             }
             const deletedResult = await cartCollection.deleteMany(query);
+
+            // * use mailgun msg configure here : send ur email about payment confirmation
+            mg.messages
+                .create(process.env.MAIL_SENDING_DOMAIN, {
+                    from: "Mailgun Sandbox <postmaster@sandbox87dcce0a2a944b808ec407413abbd0d3.mailgun.org>",
+                    to: ["devconfig.bd@gmail.com"],
+                    subject: "Order Confirmation.",
+                    text: "Bistro Boss Confirm that, Order has been under Processing. keep waiting for getting delevary. ",
+                    html: `
+                    <div>
+                        <h2>Thanks Mr/Ms for Sty with us . </h2>
+                        <h4>Your Transaction Id is :  <strong>${payment.Transaction_ID}</strong></h4>
+                        <span>We whould like your feedback about the food. </span>
+                    </div>
+                `
+                    
+                })
+                .then(msg => console.log(msg)) // logs response data
+                .catch(err => console.log(err)); // logs any error`;
+
             res.send({ paymentReslt, deletedResult })
         })
 
@@ -296,7 +324,7 @@ async function run() {
 
 
         // * Using Aggregate pipeline
-        app.get('/order-stats', verifyJWT, verefyAdmin,  async (req, res) => {
+        app.get('/order-stats', verifyJWT, verefyAdmin, async (req, res) => {
             const result = await paymentCollection.aggregate([
                 { $unwind: "$menuItemIds" },
                 {
@@ -336,7 +364,7 @@ async function run() {
         })
 
 
-        
+
         // client.db(): Comment befor deploy vercel Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
         // console.log("Pinged your deployment. You successfully connected to MongoDB!");
